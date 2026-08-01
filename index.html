@@ -86,6 +86,17 @@
     margin-bottom:14px;
     line-height:1.4;
   }
+  .sub-label{
+    text-align:center;
+    font-size:12px;
+    color:var(--text);
+    font-weight:600;
+    margin-top:16px;
+    margin-bottom:10px;
+  }
+  .sub-label:first-of-type{
+    margin-top:4px;
+  }
   .info-line{
     margin-top:12px;
     font-size:12px;
@@ -168,6 +179,13 @@
   .erg-label b{
     color:var(--accent);
   }
+  .field-label{
+    font-size:12px;
+    color:var(--text);
+    font-weight:600;
+    margin-bottom:6px;
+    display:block;
+  }
   .toggle-row{
     display:flex;
     align-items:center;
@@ -240,7 +258,7 @@
   <header>
     <div>
       <h1>Erhebende-Szenen Prompt Generator</h1>
-      <div class="subtitle">Zwei Referenzbilder (Hintergrund + Hauptfigur), Emotion per Klick wählen, bei jedem Punkt eigene Ergänzungen möglich</div>
+      <div class="subtitle">Referenzbilder klar markiert, nichts vorausgewählt, freie Szenentexte mit Dauer, viele Kameraperspektiven — Prompt komplett auf Deutsch</div>
     </div>
     <span class="reset-link" id="resetBtn">Zurücksetzen</span>
   </header>
@@ -259,126 +277,118 @@
 <script>
 // ---- Presets: hier neue Themen/Licht/Kamera/Audio-Optionen ergänzen ----
 const THEMES = [
-  { id: "sunrise_new", label: "Neuanfang bei Sonnenaufgang", icon: "🌅",
-    hint: "Ruhiger Start in einen neuen Lebensabschnitt, Hoffnung und stiller Optimismus.",
-    buildup: "{SUBJECT} stands quietly as the first light of dawn begins to break across the horizon, soft golden rays slowly spreading warmth over the landscape. The atmosphere is still, full of gentle anticipation.",
-    climax: "As the sun fully rises, light floods the scene in a warm golden glow. {SUBJECT} looks up, a genuine smile breaking across their face, filled with hope and quiet determination for what lies ahead." },
-  { id: "victory", label: "Sieg nach hartem Kampf", icon: "🏁",
-    hint: "Erschöpfung wird zu Triumph — der klassische Underdog-Moment.",
-    buildup: "{SUBJECT} pushes forward through visible exhaustion, every step heavy with effort, breathing hard, eyes fixed on the goal ahead despite the strain.",
-    climax: "{SUBJECT} reaches the goal — arms raised, an overwhelming wave of relief and joy washing over their face. Genuine tears of triumph, the emotional culmination of everything they have worked for." },
-  { id: "reunion", label: "Wiedersehen & Verbindung", icon: "🤗",
-    hint: "Emotionales Zusammentreffen zweier Menschen nach einer Trennung.",
-    buildup: "{SUBJECT} scans the space, searching, heart pounding with anticipation, a mixture of nervousness and hope visible in their expression.",
-    climax: "Their eyes meet, and {SUBJECT} breaks into a run toward the other person. The embrace is warm, tight, unguarded — pure joy and relief, genuine tears and laughter mixing together." },
-  { id: "freedom", label: "Freiheit & Leichtigkeit", icon: "🕊️",
-    hint: "Befreiendes Gefühl von Loslassen und Unbeschwertheit.",
-    buildup: "The wind picks up gently around {SUBJECT}, who closes their eyes for a moment, feeling the openness of the space around them, a quiet sense of release beginning to settle in.",
-    climax: "{SUBJECT} spreads their arms wide, moving freely and unguarded, an unrestrained burst of laughter and joy, completely present in the moment." },
-  { id: "wonder", label: "Naturwunder & Staunen", icon: "🏔️",
-    hint: "Ehrfurcht vor der Größe und Schönheit der Natur.",
-    buildup: "{SUBJECT} steps forward slowly, eyes widening as the vastness of the scene unfolds ahead, a hush of quiet amazement settling over the moment.",
-    climax: "The full scale of the view is revealed, and {SUBJECT}'s expression shifts into pure awe — a soft, genuine smile, eyes glistening, completely overwhelmed by the beauty in front of them." },
-  { id: "strength", label: "Innere Stärke & Überwindung", icon: "💪",
-    hint: "Ruhiger, kraftvoller Moment des Mut-Fassens und Überwindens.",
-    buildup: "{SUBJECT} hesitates for a moment, visibly gathering courage, taking a slow deliberate breath before stepping forward into what once felt impossible.",
-    climax: "{SUBJECT} takes the final step, and a quiet, powerful confidence washes over their face — not a loud celebration, but a deep, grounded sense of having overcome something real." },
-  { id: "gratitude", label: "Dankbarkeit & Ankunft", icon: "🙏",
-    hint: "Stille, dankbare Erleichterung nach einer langen Reise.",
-    buildup: "{SUBJECT} slows down, taking in the surroundings after a long journey, a reflective stillness settling into their posture.",
-    climax: "{SUBJECT} exhales, a warm and grateful smile forming, eyes softening with emotion — the quiet, profound feeling of finally arriving exactly where they were meant to be." },
-  { id: "joy", label: "Kindliche Freude", icon: "🎈",
-    hint: "Unbeschwerte, ansteckende Freude wie in der Kindheit.",
-    buildup: "{SUBJECT} looks around with wide-eyed curiosity, a growing excitement building, unable to contain a small, anticipatory smile.",
-    climax: "{SUBJECT} bursts into unrestrained laughter and joy, moving freely, completely absorbed in a moment of pure, uncomplicated happiness." }
+  { id: "sunrise_new", label: "Neuanfang bei Sonnenaufgang", icon: "🌅", hint: "Ruhiger Start in einen neuen Lebensabschnitt, Hoffnung und stiller Optimismus." },
+  { id: "victory", label: "Sieg nach hartem Kampf", icon: "🏁", hint: "Erschöpfung wird zu Triumph — der klassische Underdog-Moment." },
+  { id: "reunion", label: "Wiedersehen & Verbindung", icon: "🤗", hint: "Emotionales Zusammentreffen zweier Menschen nach einer Trennung." },
+  { id: "freedom", label: "Freiheit & Leichtigkeit", icon: "🕊️", hint: "Befreiendes Gefühl von Loslassen und Unbeschwertheit." },
+  { id: "wonder", label: "Naturwunder & Staunen", icon: "🏔️", hint: "Ehrfurcht vor der Größe und Schönheit der Natur." },
+  { id: "strength", label: "Innere Stärke & Überwindung", icon: "💪", hint: "Ruhiger, kraftvoller Moment des Mut-Fassens und Überwindens." },
+  { id: "gratitude", label: "Dankbarkeit & Ankunft", icon: "🙏", hint: "Stille, dankbare Erleichterung nach einer langen Reise." },
+  { id: "joy", label: "Kindliche Freude", icon: "🎈", hint: "Unbeschwerte, ansteckende Freude wie in der Kindheit." }
 ];
 
 const LIGHT = [
-  { id: "sunrise", label: "Sonnenaufgang", phrase: "soft sunrise", hint: "Zarte, erste Morgenstrahlen — Symbol für Neuanfang." },
-  { id: "golden", label: "Goldene Stunde", phrase: "warm golden-hour", hint: "Warmes, weiches Licht kurz vor Sonnenuntergang — sehr filmisch." },
-  { id: "blue", label: "Blaue Stunde", phrase: "cool blue-hour twilight", hint: "Kühles, ruhiges Dämmerlicht — introspektiv." },
-  { id: "sunset", label: "Sonnenuntergang", phrase: "glowing sunset", hint: "Kräftige warme Farben am Horizont — episch und emotional." },
-  { id: "moonlit", label: "Vollmondnacht", phrase: "moonlit night", hint: "Stilles, silbriges Nachtlicht — verträumt und ruhig." },
-  { id: "daylight", label: "Klares Tageslicht", phrase: "clear daylight", hint: "Neutrales, helles Licht — offen und klar." }
+  { id: "sunrise", label: "Sonnenaufgang", hint: "Zarte, erste Morgenstrahlen — Symbol für Neuanfang." },
+  { id: "golden", label: "Goldene Stunde", hint: "Warmes, weiches Licht kurz vor Sonnenuntergang — sehr filmisch." },
+  { id: "blue", label: "Blaue Stunde", hint: "Kühles, ruhiges Dämmerlicht — introspektiv." },
+  { id: "sunset", label: "Sonnenuntergang", hint: "Kräftige warme Farben am Horizont — episch und emotional." },
+  { id: "moonlit", label: "Vollmondnacht", hint: "Stilles, silbriges Nachtlicht — verträumt und ruhig." },
+  { id: "daylight", label: "Klares Tageslicht", hint: "Neutrales, helles Licht — offen und klar." }
 ];
 
 const CAMERA = [
-  { id: "dollyin", label: "Langsamer Dolly-in", phrase: "a slow, steady dolly-in", hint: "Kamera fährt langsam näher — baut emotionale Nähe auf." },
-  { id: "drone", label: "Drohnenaufstieg", phrase: "a smooth drone ascent revealing the wider scene", hint: "Kamera steigt auf und zeigt die große Perspektive." },
-  { id: "orbit", label: "Sanfte Umkreisung", phrase: "a gentle orbiting movement around the subject", hint: "Kamera umkreist sanft — hält den Fokus auf der Person." },
-  { id: "slowmo", label: "Zeitlupe", phrase: "a slow-motion tracking shot", hint: "Verlangsamte Bewegung betont den emotionalen Moment." },
-  { id: "handheld", label: "Handheld-Folgefahrt", phrase: "a natural handheld follow shot", hint: "Leicht organisches Wackeln — wirkt authentisch und nah." },
-  { id: "crane", label: "Kranaufnahme nach oben", phrase: "a crane shot rising slowly upward", hint: "Kamera hebt sich elegant — großer, abschließender Blick." }
+  { id: "static", label: "Statisch (feste Einstellung)", phrase: "eine feste, unbewegte Einstellung (Static Shot)", hint: "Keine Kamerabewegung — lässt die Szene für sich wirken." },
+  { id: "dollyin", label: "Dolly-in (näher)", phrase: "eine langsame Kamerafahrt nach vorne (Dolly-in)", hint: "Kamera fährt langsam näher — baut emotionale Nähe auf." },
+  { id: "dollyout", label: "Dolly-out (zurück)", phrase: "eine langsame Kamerafahrt nach hinten (Dolly-out)", hint: "Kamera fährt zurück — zeigt zunehmend mehr vom Kontext." },
+  { id: "zoomin", label: "Zoom-in", phrase: "einen langsamen Zoom nach vorne", hint: "Optischer Zoom statt Kamerafahrt — konzentriert den Blick." },
+  { id: "zoomout", label: "Zoom-out", phrase: "einen langsamen Zoom nach hinten", hint: "Öffnet den Blick und zeigt mehr Umgebung." },
+  { id: "panl", label: "Schwenk nach links", phrase: "einen horizontalen Schwenk nach links (Pan)", hint: "Kamera dreht sich horizontal nach links." },
+  { id: "panr", label: "Schwenk nach rechts", phrase: "einen horizontalen Schwenk nach rechts (Pan)", hint: "Kamera dreht sich horizontal nach rechts." },
+  { id: "tiltup", label: "Neigung nach oben", phrase: "eine Neigung der Kamera nach oben (Tilt up)", hint: "Kamera kippt vertikal nach oben." },
+  { id: "tiltdown", label: "Neigung nach unten", phrase: "eine Neigung der Kamera nach unten (Tilt down)", hint: "Kamera kippt vertikal nach unten." },
+  { id: "droneup", label: "Drohnenaufstieg", phrase: "einen sanften Drohnenaufstieg, der die weitere Szene zeigt", hint: "Kamera steigt auf und zeigt die große Perspektive." },
+  { id: "dronedown", label: "Drohnenabstieg", phrase: "einen sanften Drohnenabstieg näher zum Motiv", hint: "Kamera sinkt von oben näher zum Geschehen." },
+  { id: "orbit", label: "Sanfte Umkreisung", phrase: "eine sanfte Umkreisung des Motivs", hint: "Kamera umkreist sanft — hält den Fokus auf der Person." },
+  { id: "slowmo", label: "Zeitlupen-Verfolgung", phrase: "eine verlangsamte Verfolgungsaufnahme (Zeitlupe)", hint: "Verlangsamte Bewegung betont den emotionalen Moment." },
+  { id: "handheld", label: "Handheld-Folgefahrt", phrase: "eine natürliche, leicht wackelige Handkamera-Folgefahrt", hint: "Leicht organisches Wackeln — wirkt authentisch und nah." },
+  { id: "craneup", label: "Kranaufnahme nach oben", phrase: "eine Kranfahrt, die sich langsam nach oben hebt", hint: "Kamera hebt sich elegant — großer, abschließender Blick." },
+  { id: "cranedown", label: "Kranaufnahme nach unten", phrase: "eine Kranfahrt, die sich langsam nach unten senkt", hint: "Kamera senkt sich elegant näher zum Geschehen." }
 ];
 
 const AUDIO = [
-  { id: "orchestral", label: "Orchestrales Anschwellen", phrase: "a swelling orchestral score", hint: "Klassischer emotionaler Spannungsaufbau." },
-  { id: "piano", label: "Sanftes Klavier", phrase: "a soft, minimal piano melody", hint: "Intim und zurückhaltend, sehr persönlich." },
-  { id: "choir", label: "A-cappella-Chor", phrase: "a warm a cappella choir", hint: "Menschliche Stimmen — verbindend und erhebend." },
-  { id: "silence", label: "Stille dann Musik", phrase: "near silence that gradually blooms into music", hint: "Kontrast: erst Stille, dann emotionale Musik." },
-  { id: "ambient", label: "Warmer Ambient-Sound", phrase: "a warm ambient soundscape", hint: "Ruhiger Klangteppich statt klassischer Musik." }
+  { id: "orchestral", label: "Orchestrales Anschwellen", hint: "Klassischer emotionaler Spannungsaufbau." },
+  { id: "piano", label: "Sanftes Klavier", hint: "Intim und zurückhaltend, sehr persönlich." },
+  { id: "choir", label: "A-cappella-Chor", hint: "Menschliche Stimmen — verbindend und erhebend." },
+  { id: "silence", label: "Stille, dann Musik", hint: "Kontrast: erst Stille, dann emotionale Musik." },
+  { id: "ambient", label: "Warmer Ambient-Sound", hint: "Ruhiger Klangteppich statt klassischer Musik." }
 ];
 
 const TRANSITIONS = [
-  { id: "cut", label: "Harter Schnitt", phrase: "a hard cut", hint: "Direkter, unmittelbarer Szenenwechsel ohne Übergang." },
-  { id: "dissolve", label: "Überblendung", phrase: "a smooth cross-dissolve", hint: "Sanftes Ineinanderfließen der beiden Szenen." },
-  { id: "match", label: "Match Cut", phrase: "a seamless match cut", hint: "Der Schnitt folgt einer Bewegung/Form aus der vorherigen Szene — wirkt sehr elegant." },
-  { id: "whip", label: "Whip Pan", phrase: "a fast whip-pan transition", hint: "Schnelles Verwischen der Kamera als Übergang — energiegeladen." },
-  { id: "speedramp", label: "Speed Ramp", phrase: "a dynamic speed-ramp transition", hint: "Tempo der Bewegung wird kurz beschleunigt, dann wieder normal — sehr cineastisch." }
+  { id: "cut", label: "Harter Schnitt", phrase: "einem harten Schnitt", hint: "Direkter, unmittelbarer Szenenwechsel ohne Übergang." },
+  { id: "dissolve", label: "Überblendung", phrase: "einer weichen Überblendung", hint: "Sanftes Ineinanderfließen der beiden Szenen." },
+  { id: "match", label: "Match Cut", phrase: "einem nahtlosen Match Cut", hint: "Der Schnitt folgt einer Bewegung/Form aus der vorherigen Szene — wirkt sehr elegant." },
+  { id: "whip", label: "Whip Pan", phrase: "einem schnellen Whip-Pan-Übergang", hint: "Schnelles Verwischen der Kamera als Übergang — energiegeladen." },
+  { id: "speedramp", label: "Speed Ramp", phrase: "einem dynamischen Speed-Ramp-Übergang", hint: "Tempo der Bewegung wird kurz beschleunigt, dann wieder normal — sehr cineastisch." }
 ];
 
 const REVEAL_TYPES = [
-  { id: "soundstage", label: "Filmset / Soundstage", phrase: "a professional film soundstage, with practical sets, lighting rigs, monitors and a full production crew visible", hint: "Klassisches Hollywood-Filmset mit Crew und Equipment." },
-  { id: "greenscreen", label: "Greenscreen-Studio", phrase: "a greenscreen studio, with visible tracking markers, monitors and a VFX crew reviewing the shot", hint: "Moderne VFX-Produktion mit Greenscreen und Tracking-Markern." },
-  { id: "miniature", label: "Miniatur-Modell", phrase: "an incredibly detailed miniature model, with practical effects equipment and a crew filming the tiny set", hint: "Die ganze Szene war in Wahrheit ein winziges Miniaturmodell." },
-  { id: "led", label: "LED-Wall / Virtual Production", phrase: "a virtual production stage with a massive curved LED wall displaying the environment, surrounded by camera operators and technicians", hint: "Moderne LED-Wand-Produktion wie bei aktuellen Streaming-Serien." }
+  { id: "soundstage", label: "Filmset / Soundstage", phrase: "einem professionellen Filmset mit Bauten, Lichttechnik, Monitoren und einem vollständigen Produktionsteam", hint: "Klassisches Hollywood-Filmset mit Crew und Equipment." },
+  { id: "greenscreen", label: "Greenscreen-Studio", phrase: "einem Greenscreen-Studio mit sichtbaren Tracking-Markern, Monitoren und einem VFX-Team, das die Aufnahme überprüft", hint: "Moderne VFX-Produktion mit Greenscreen und Tracking-Markern." },
+  { id: "miniature", label: "Miniatur-Modell", phrase: "einem unglaublich detaillierten Miniaturmodell mit Spezialeffekt-Equipment und einem Team, das das winzige Set filmt", hint: "Die ganze Szene war in Wahrheit ein winziges Miniaturmodell." },
+  { id: "led", label: "LED-Wall / Virtual Production", phrase: "einer virtuellen Produktionsbühne mit einer riesigen gebogenen LED-Wand, umgeben von Kameraleuten und Technikern", hint: "Moderne LED-Wand-Produktion wie bei aktuellen Streaming-Serien." }
 ];
 
-const ASPECTS = ["9:16", "16:9", "1:1", "4:5"];
+const ASPECTS = [
+  { id: "9:16", label: "9:16" },
+  { id: "16:9", label: "16:9" },
+  { id: "1:1", label: "1:1" },
+  { id: "4:5", label: "4:5" }
+];
 
 const STYLE_TAGS = [
-  { text: "Ultra photorealistic", hint: "Maximale Detailtreue, wirkt wie echtes Filmmaterial." },
-  { text: "Cinematic", hint: "Filmischer Gesamtlook." },
-  { text: "Warm natural light", hint: "Warmes, natürliches Licht statt künstlicher Ausleuchtung." },
-  { text: "Soft volumetric lighting", hint: "Sichtbare, weiche Lichtstrahlen für Tiefe." },
-  { text: "Shallow depth of field", hint: "Unscharfer Hintergrund, Fokus auf der Hauptfigur." },
-  { text: "Emotional close-up", hint: "Nahaufnahmen, die Mimik und Gefühl betonen." },
-  { text: "Slow motion", hint: "Verlangsamte Bewegung für mehr Wirkung." },
-  { text: "Anamorphic lens", hint: "Breites Kino-Bildformat mit ovalen Lichtreflexen." },
-  { text: "Heartwarming", hint: "Warme, positive Grundstimmung." },
-  { text: "Inspirational documentary style", hint: "Wirkt wie eine hochwertige Doku-Erzählung." },
-  { text: "Gentle camera shake", hint: "Leichtes, organisches Kamerawackeln." },
-  { text: "Rich color grading", hint: "Kräftige, durchdachte Farbkorrektur." },
-  { text: "Extremely detailed", hint: "Sehr viele feine Details im Bild." }
+  { text: "Ultra-fotorealistisch", hint: "Maximale Detailtreue, wirkt wie echtes Filmmaterial." },
+  { text: "Filmisch / kinoreif", hint: "Filmischer Gesamtlook." },
+  { text: "Warmes natürliches Licht", hint: "Warmes, natürliches Licht statt künstlicher Ausleuchtung." },
+  { text: "Weiches, volumetrisches Licht", hint: "Sichtbare, weiche Lichtstrahlen für Tiefe." },
+  { text: "Geringe Schärfentiefe", hint: "Unscharfer Hintergrund, Fokus auf der Hauptfigur." },
+  { text: "Emotionale Nahaufnahmen", hint: "Nahaufnahmen, die Mimik und Gefühl betonen." },
+  { text: "Zeitlupe", hint: "Verlangsamte Bewegung für mehr Wirkung." },
+  { text: "Anamorphotisches Objektiv", hint: "Breites Kino-Bildformat mit ovalen Lichtreflexen." },
+  { text: "Herzerwärmend", hint: "Warme, positive Grundstimmung." },
+  { text: "Inspirierender Dokumentarstil", hint: "Wirkt wie eine hochwertige Doku-Erzählung." },
+  { text: "Leichtes Kamerawackeln", hint: "Leicht organisches Kamerawackeln." },
+  { text: "Kräftige Farbkorrektur", hint: "Kräftige, durchdachte Farbkorrektur." },
+  { text: "Extrem detailliert", hint: "Sehr viele feine Details im Bild." }
 ];
 
 const state = {
-  figureShort: "the main character",
+  figureShort: "",
   figureErg: "",
-  placeShort: "a quiet mountain landscape at sunrise",
+  placeShort: "",
   placeErg: "",
-  theme: "victory",
+  theme: null,
   themeErg: "",
-  light: "golden",
+  light: null,
   lightErg: "",
-  aufbau: 3,
-  camera1: "drone",
-  camera2: "dollyin",
-  camera3: "slowmo",
-  transition: "dissolve",
+  scenes: [
+    { camera: null, text: "", dauer: "" },
+    { camera: null, text: "", dauer: "" },
+    { camera: null, text: "", dauer: "" }
+  ],
+  transition: null,
   sceneErg: "",
-  audio: "orchestral",
+  audio: null,
   audioErg: "",
-  revealOn: true,
-  revealType: "soundstage",
+  revealOn: false,
+  revealType: null,
   revealErg: "",
   titleOn: false,
   title1: "",
   title2: "",
-  dauer: 10,
-  aspect: "9:16",
+  dauerGesamt: 10,
+  aspect: null,
   durationErg: "",
-  styleTags: STYLE_TAGS.map(t => t.text),
+  styleTags: [],
   styleErg: ""
 };
 
@@ -417,54 +427,63 @@ function addErgField(card, key, placeholder) {
   card.appendChild(wrap);
 }
 
-function renderPillGroup(card, options, stateKey, multi, onChange) {
+// accessor = { get(): value, set(v): void } — set() only needed for single-select
+function renderPillGroup(card, options, accessor, multi) {
   const pills = document.createElement("div");
   pills.className = "pills";
   const infoLine = document.createElement("div");
   infoLine.className = "info-line";
   const showHint = (o) => { infoLine.textContent = (o && o.hint) || ""; };
 
-  const isActive = (o) => multi ? state[stateKey].includes(o.text || o.id) : state[stateKey] === o.id;
+  const isActive = (o) => {
+    const val = accessor.get();
+    return multi ? val.includes(o.text || o.id) : val === o.id;
+  };
+  const refreshActive = () => {
+    Array.from(pills.children).forEach((p, i) => p.classList.toggle("active", isActive(options[i])));
+  };
 
   options.forEach(o => {
     const pill = document.createElement("button");
+    pill.type = "button";
     pill.className = "pill" + (isActive(o) ? " active" : "");
     pill.textContent = (o.icon ? o.icon + " " : "") + o.label;
     pill.addEventListener("click", () => {
       if (multi) {
+        const arr = accessor.get();
         const val = o.text;
-        const idx = state[stateKey].indexOf(val);
-        if (idx === -1) { state[stateKey].push(val); pill.classList.add("active"); }
-        else { state[stateKey].splice(idx, 1); pill.classList.remove("active"); }
+        const idx = arr.indexOf(val);
+        if (idx === -1) arr.push(val); else arr.splice(idx, 1);
       } else {
-        state[stateKey] = o.id;
-        pills.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
-        pill.classList.add("active");
+        accessor.set(accessor.get() === o.id ? null : o.id);
       }
+      refreshActive();
       showHint(o);
-      if (onChange) onChange();
       updatePrompt();
     });
     pill.addEventListener("mouseenter", () => showHint(o));
     pill.addEventListener("mouseleave", () => {
-      if (!multi) showHint(options.find(x => x.id === state[stateKey]));
-      else infoLine.textContent = "";
+      if (!multi) {
+        const val = accessor.get();
+        showHint(options.find(x => x.id === val));
+      } else {
+        infoLine.textContent = "";
+      }
     });
     pills.appendChild(pill);
   });
   card.appendChild(pills);
-  if (!multi) showHint(options.find(x => x.id === state[stateKey]));
   card.appendChild(infoLine);
 }
 
 // --- Hauptfigur (Referenzbild 1) ---
 {
-  const card = makeCard("🧍", "Hauptfigur (Referenzbild)", "Kurzbezeichnung der Person aus dem Hauptfigur-Referenzbild, wird im ganzen Prompt verwendet.");
+  const card = makeCard("🧍", "Hauptfigur (Referenzbild 1)", "Kurzbezeichnung der Person aus Referenzbild 1. Erscheint im Prompt mit einem Klammer-Hinweis, welches Bild gemeint ist.");
   const input = document.createElement("input");
   input.type = "text";
   input.value = state.figureShort;
-  input.placeholder = "z.B. the runner / the young woman / she";
-  input.addEventListener("input", () => { state.figureShort = input.value.trim() || "the main character"; updatePrompt(); });
+  input.placeholder = "z.B. die Läuferin / die junge Frau / sie";
+  input.addEventListener("input", () => { state.figureShort = input.value.trim(); updatePrompt(); });
   card.appendChild(input);
   addErgField(card, "figureErg", "z.B. Kleidung, Alter, besondere Merkmale, die neben dem Referenzbild wichtig sind...");
   grid.appendChild(card);
@@ -472,97 +491,98 @@ function renderPillGroup(card, options, stateKey, multi, onChange) {
 
 // --- Hintergrund/Ort (Referenzbild 2) ---
 {
-  const card = makeCard("🏞️", "Hintergrund / Ort (Referenzbild)", "Kurzbeschreibung des Orts aus dem Hintergrund-Referenzbild.");
+  const card = makeCard("🏞️", "Hintergrund / Ort (Referenzbild 2)", "Kurzbeschreibung des Orts aus Referenzbild 2.");
   const input = document.createElement("input");
   input.type = "text";
   input.value = state.placeShort;
-  input.placeholder = "z.B. a mountain summit / their hometown street";
-  input.addEventListener("input", () => { state.placeShort = input.value.trim() || "the setting"; updatePrompt(); });
+  input.placeholder = "z.B. der Gipfel eines Berges bei Sonnenaufgang";
+  input.addEventListener("input", () => { state.placeShort = input.value.trim(); updatePrompt(); });
   card.appendChild(input);
   addErgField(card, "placeErg", "z.B. Wetter, Details der Umgebung, Tageszeit-Besonderheiten...");
   grid.appendChild(card);
 }
 
-// --- Emotionales Thema ---
+// --- Emotionaler Kern (Thema) ---
 {
-  const card = makeCard("✨", "Emotionale Geschichte", "Bestimmt Aufbau und emotionalen Höhepunkt der Szene.");
+  const card = makeCard("✨", "Emotionaler Kern (optional)", "Kurzer thematischer Anker, erscheint als Notiz in der Grundstimmung. Die eigentliche Handlung schreibst du direkt bei den Szenen.");
   card.classList.add("full");
-  renderPillGroup(card, THEMES, "theme", false);
+  renderPillGroup(card, THEMES, { get: () => state.theme, set: v => { state.theme = v; } }, false);
   addErgField(card, "themeErg", "z.B. zusätzliche Details zum emotionalen Verlauf...");
   grid.appendChild(card);
 }
 
 // --- Licht/Tageszeit ---
 {
-  const card = makeCard("☀️", "Licht & Tageszeit", "Stimmung der Beleuchtung während der ganzen Szene.");
-  renderPillGroup(card, LIGHT, "light", false);
+  const card = makeCard("☀️", "Licht & Tageszeit (optional)", "Grundstimmung der Beleuchtung über das ganze Video.");
+  renderPillGroup(card, LIGHT, { get: () => state.light, set: v => { state.light = v; } }, false);
   addErgField(card, "lightErg", "z.B. spezielle Lichtstimmung...");
   grid.appendChild(card);
 }
 
-// --- Aufbauzeit ---
-{
-  const card = makeCard("⏱️", "Aufbauzeit", "Wie lange bleibt die Szene ruhig, bevor der emotionale Höhepunkt einsetzt.");
-  const row = document.createElement("div");
-  row.className = "slider-row";
-  const valueDisplay = document.createElement("div");
-  valueDisplay.className = "slider-value";
-  valueDisplay.innerHTML = `${state.aufbau}<span>Sek.</span>`;
-  const slider = document.createElement("input");
-  slider.type = "range";
-  slider.min = 1; slider.max = 6; slider.step = 1; slider.value = state.aufbau;
-  slider.addEventListener("input", () => {
-    state.aufbau = Number(slider.value);
-    valueDisplay.innerHTML = `${state.aufbau}<span>Sek.</span>`;
-    updatePrompt();
-  });
-  row.appendChild(valueDisplay);
-  row.appendChild(slider);
-  card.appendChild(row);
-  grid.appendChild(card);
-}
-
-// --- Szenen & Kameraperspektiven ---
-{
-  const card = makeCard("🎬", "Szenen & Kameraperspektiven", "Das Video läuft in 3 Szenen ab — jede mit eigener Kameraperspektive, dazwischen ein Szenenübergang.");
+// --- Szenen (frei befüllbar, je 1-3) ---
+const SCENE_LABELS = ["Szene 1 — Etablierung", "Szene 2 — Aufbau", "Szene 3 — Höhepunkt"];
+SCENE_LABELS.forEach((label, i) => {
+  const card = makeCard("🎬", label, "Alles optional — leer lassen, um diese Szene komplett auszulassen.");
   card.classList.add("full");
 
-  const sub1 = document.createElement("div");
-  sub1.className = "category-desc";
-  sub1.style.marginTop = "4px";
-  sub1.textContent = "Szene 1 — Etablierung";
-  card.appendChild(sub1);
-  renderPillGroup(card, CAMERA, "camera1", false);
+  const camLabel = document.createElement("div");
+  camLabel.className = "sub-label";
+  camLabel.textContent = "Kameraperspektive";
+  card.appendChild(camLabel);
+  renderPillGroup(card, CAMERA, {
+    get: () => state.scenes[i].camera,
+    set: v => { state.scenes[i].camera = v; }
+  }, false);
 
-  const sub2 = document.createElement("div");
-  sub2.className = "category-desc";
-  sub2.style.marginTop = "16px";
-  sub2.textContent = "Szene 2 — Aufbau";
-  card.appendChild(sub2);
-  renderPillGroup(card, CAMERA, "camera2", false);
+  const taWrap = document.createElement("div");
+  taWrap.className = "erg-wrap";
+  const taLabel = document.createElement("span");
+  taLabel.className = "field-label";
+  taLabel.textContent = "Was passiert in dieser Szene?";
+  const textarea = document.createElement("textarea");
+  textarea.className = "free-text";
+  textarea.placeholder = "z.B. Die Person steht ruhig da, während die ersten Sonnenstrahlen den Horizont erhellen.";
+  textarea.value = state.scenes[i].text;
+  textarea.addEventListener("input", () => { state.scenes[i].text = textarea.value.trim(); updatePrompt(); });
+  taWrap.appendChild(taLabel);
+  taWrap.appendChild(textarea);
+  card.appendChild(taWrap);
 
-  const sub3 = document.createElement("div");
-  sub3.className = "category-desc";
-  sub3.style.marginTop = "16px";
-  sub3.textContent = "Szene 3 — Höhepunkt";
-  card.appendChild(sub3);
-  renderPillGroup(card, CAMERA, "camera3", false);
+  const durWrap = document.createElement("div");
+  durWrap.className = "erg-wrap";
+  const durLabel = document.createElement("span");
+  durLabel.className = "field-label";
+  durLabel.textContent = "Dauer dieser Szene (Sekunden, optional)";
+  const durInput = document.createElement("input");
+  durInput.type = "text";
+  durInput.inputMode = "numeric";
+  durInput.placeholder = "z.B. 3";
+  durInput.style.marginBottom = "0";
+  durInput.value = state.scenes[i].dauer;
+  durInput.addEventListener("input", () => {
+    state.scenes[i].dauer = durInput.value.replace(/[^0-9]/g, "");
+    if (durInput.value !== state.scenes[i].dauer) durInput.value = state.scenes[i].dauer;
+    updatePrompt();
+  });
+  durWrap.appendChild(durLabel);
+  durWrap.appendChild(durInput);
+  card.appendChild(durWrap);
 
-  const subT = document.createElement("div");
-  subT.className = "category-desc";
-  subT.style.marginTop = "16px";
-  subT.textContent = "Szenenübergang (zwischen allen Szenen)";
-  card.appendChild(subT);
-  renderPillGroup(card, TRANSITIONS, "transition", false);
+  grid.appendChild(card);
+});
 
-  addErgField(card, "sceneErg", "z.B. weitere Details zu Szenenaufbau oder Kamera...");
+// --- Szenenübergang ---
+{
+  const card = makeCard("🔀", "Szenenübergang (optional)", "Übergangsstil zwischen den ausgefüllten Szenen.");
+  renderPillGroup(card, TRANSITIONS, { get: () => state.transition, set: v => { state.transition = v; } }, false);
+  addErgField(card, "sceneErg", "z.B. weitere Hinweise zu Szenenaufbau oder Übergängen...");
   grid.appendChild(card);
 }
 
 // --- Musik & Atmosphäre ---
 {
-  const card = makeCard("🎵", "Musik & Atmosphäre", "Klangliche Stimmung, die den emotionalen Verlauf begleitet.");
-  renderPillGroup(card, AUDIO, "audio", false);
+  const card = makeCard("🎵", "Musik & Atmosphäre (optional)", "Klangliche Stimmung, die das Video begleitet.");
+  renderPillGroup(card, AUDIO, { get: () => state.audio, set: v => { state.audio = v; } }, false);
   addErgField(card, "audioErg", "z.B. spezielle Klang-Wünsche...");
   grid.appendChild(card);
 }
@@ -580,7 +600,7 @@ function renderPillGroup(card, options, stateKey, multi, onChange) {
 
   const pillsWrap = document.createElement("div");
   pillsWrap.style.display = state.revealOn ? "block" : "none";
-  renderPillGroup(pillsWrap, REVEAL_TYPES, "revealType", false);
+  renderPillGroup(pillsWrap, REVEAL_TYPES, { get: () => state.revealType, set: v => { state.revealType = v; } }, false);
   addErgField(pillsWrap, "revealErg", "z.B. weitere Details zur Enthüllung (Crew, Equipment, Stimmung)...");
 
   cb.addEventListener("change", () => {
@@ -597,7 +617,7 @@ function renderPillGroup(card, options, stateKey, multi, onChange) {
 
 // --- Titel-Einblendung ---
 {
-  const card = makeCard("🔤", "Titel-Einblendung (optional)", "Freie Textzeilen, die am Ende der Szene eingeblendet werden.");
+  const card = makeCard("🔤", "Titel-Einblendung (optional)", "Freie Textzeilen, die am Ende eingeblendet werden.");
   card.classList.add("full");
   const toggleRow = document.createElement("label");
   toggleRow.className = "toggle-row";
@@ -631,129 +651,156 @@ function renderPillGroup(card, options, stateKey, multi, onChange) {
   grid.appendChild(card);
 }
 
-// --- Dauer & Format ---
+// --- Format ---
 {
-  const card = makeCard("📐", "Dauer & Format", "Videolänge in Sekunden und Seitenverhältnis.");
+  const card = makeCard("📐", "Format", "Gesamtlänge und Seitenverhältnis des fertigen Videos.");
   const row = document.createElement("div");
   row.className = "slider-row";
   const valueDisplay = document.createElement("div");
   valueDisplay.className = "slider-value";
-  valueDisplay.innerHTML = `${state.dauer}<span>Sek.</span>`;
+  valueDisplay.innerHTML = `${state.dauerGesamt}<span>Sek.</span>`;
   const slider = document.createElement("input");
   slider.type = "range";
-  slider.min = 6; slider.max = 20; slider.step = 1; slider.value = state.dauer;
+  slider.min = 6; slider.max = 30; slider.step = 1; slider.value = state.dauerGesamt;
   slider.addEventListener("input", () => {
-    state.dauer = Number(slider.value);
-    valueDisplay.innerHTML = `${state.dauer}<span>Sek.</span>`;
+    state.dauerGesamt = Number(slider.value);
+    valueDisplay.innerHTML = `${state.dauerGesamt}<span>Sek.</span>`;
     updatePrompt();
   });
   row.appendChild(valueDisplay);
   row.appendChild(slider);
   card.appendChild(row);
 
-  const pills = document.createElement("div");
-  pills.className = "pills";
-  pills.style.marginTop = "12px";
-  ASPECTS.forEach(a => {
-    const pill = document.createElement("button");
-    pill.className = "pill" + (a === state.aspect ? " active" : "");
-    pill.textContent = a;
-    pill.addEventListener("click", () => {
-      state.aspect = a;
-      pills.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
-      pill.classList.add("active");
-      updatePrompt();
-    });
-    pills.appendChild(pill);
-  });
-  card.appendChild(pills);
+  const aspectLabel = document.createElement("div");
+  aspectLabel.className = "sub-label";
+  aspectLabel.textContent = "Seitenverhältnis (optional)";
+  card.appendChild(aspectLabel);
+  renderPillGroup(card, ASPECTS, { get: () => state.aspect, set: v => { state.aspect = v; } }, false);
+
   addErgField(card, "durationErg", "z.B. Wünsche zu Framerate, Auflösung...");
   grid.appendChild(card);
 }
 
 // --- Stil-Tags ---
 {
-  const card = makeCard("🌟", "Stil-Tags", "Schlagwörter am Ende des Prompts — anklicken zum An-/Abwählen.");
+  const card = makeCard("🌟", "Stil-Tags (optional)", "Schlagwörter am Ende des Prompts — anklicken zum An-/Abwählen.");
   card.classList.add("full");
-  renderPillGroup(card, STYLE_TAGS.map(t => ({ id: t.text, text: t.text, label: t.text, hint: t.hint })), "styleTags", true);
+  renderPillGroup(card, STYLE_TAGS.map(t => ({ id: t.text, text: t.text, label: t.text, hint: t.hint })), { get: () => state.styleTags }, true);
   addErgField(card, "styleErg", "z.B. weitere eigene Stil-Tags, kommagetrennt...");
   grid.appendChild(card);
 }
 
-function fillSubject(text, subj) {
-  return text.split("{SUBJECT}").join(subj);
-}
-
-function capFirst(str) {
-  return str.replace(/(^\s*|[.!?:]\s+)([a-z])/g, (m, pre, c) => pre + c.toUpperCase());
-}
-
-function currentTheme() { return THEMES.find(t => t.id === state.theme) || THEMES[0]; }
-function currentLight() { return LIGHT.find(l => l.id === state.light) || LIGHT[0]; }
-function currentAudio() { return AUDIO.find(a => a.id === state.audio) || AUDIO[0]; }
-function currentTransition() { return TRANSITIONS.find(t => t.id === state.transition) || TRANSITIONS[0]; }
-function currentReveal() { return REVEAL_TYPES.find(r => r.id === state.revealType) || REVEAL_TYPES[0]; }
-function cameraById(id) { return CAMERA.find(c => c.id === id) || CAMERA[0]; }
-
 function updatePrompt() {
-  const figure = state.figureShort || "the main character";
-  const place = state.placeShort || "the setting";
-  const theme = currentTheme();
-  const light = currentLight();
-  const audio = currentAudio();
-  const transition = currentTransition();
-  const cam1 = cameraById(state.camera1);
-  const cam2 = cameraById(state.camera2);
-  const cam3 = cameraById(state.camera3);
-
   const parts = [];
 
-  parts.push(capFirst(`Use the uploaded character reference image as the exact main subject of the video: ${figure}. Do NOT redesign, replace, or reinterpret their appearance, face, clothing, or proportions — preserve them exactly as shown in the reference image throughout the video.${state.figureErg ? " " + state.figureErg : ""}`));
+  // Referenzbild 1 – Hauptfigur
+  if (state.figureShort) {
+    let line = `Verwende das hochgeladene Bild (Referenzbild 1 – Hauptfigur) als exaktes Hauptmotiv des Videos: ${state.figureShort}. Aussehen, Gesicht, Kleidung und Proportionen dürfen nicht verändert oder neu interpretiert werden — sie müssen exakt wie im Referenzbild beibehalten werden.`;
+    if (state.figureErg) line += " " + state.figureErg;
+    parts.push("REFERENZBILD 1 – HAUPTFIGUR\n" + line);
+  }
 
-  parts.push(capFirst(`Use the uploaded background reference image as the exact setting: ${place}. Preserve the environment, architecture, lighting, and perspective exactly as shown in the reference image.${state.placeErg ? " " + state.placeErg : ""}`));
+  // Referenzbild 2 – Hintergrund/Ort
+  if (state.placeShort) {
+    let line = `Verwende das hochgeladene Bild (Referenzbild 2 – Hintergrund/Ort) als exakten Schauplatz: ${state.placeShort}. Umgebung, Architektur, Licht und Perspektive müssen exakt wie im Referenzbild beibehalten werden.`;
+    if (state.placeErg) line += " " + state.placeErg;
+    parts.push("REFERENZBILD 2 – HINTERGRUND / ORT\n" + line);
+  }
 
-  // Szene 1: Etablierung
-  parts.push(capFirst(`Scene 1 (establishing shot): The video begins with a calm, cinematic shot of ${figure} in ${place} under ${light.phrase} skies. The mood is quiet and contemplative for the first ${state.aufbau} seconds. Camera: ${cam1.phrase}.${state.lightErg ? " " + state.lightErg : ""}`));
+  // Grundstimmung
+  {
+    const lines = [];
+    if (state.theme) {
+      const t = THEMES.find(x => x.id === state.theme);
+      lines.push(`Emotionaler Kern: ${t.label} – ${t.hint}`);
+    }
+    if (state.themeErg) lines.push(state.themeErg);
+    if (state.light) {
+      const l = LIGHT.find(x => x.id === state.light);
+      lines.push(`Licht & Tageszeit: ${l.label} – ${l.hint}`);
+    }
+    if (state.lightErg) lines.push(state.lightErg);
+    if (lines.length) parts.push("GRUNDSTIMMUNG\n" + lines.join("\n"));
+  }
 
-  parts.push(capFirst(`The scene transitions to the next moment with ${transition.phrase}.`));
+  // Szenen
+  {
+    const activeBlocks = [];
+    state.scenes.forEach((sc, i) => {
+      const lines = [];
+      if (sc.dauer) lines.push(`Dauer: ${sc.dauer} Sekunden.`);
+      if (sc.camera) {
+        const c = CAMERA.find(x => x.id === sc.camera);
+        lines.push(`Kamera: ${c.phrase}.`);
+      }
+      if (sc.text) lines.push(`Was passiert: ${sc.text}`);
+      if (lines.length) activeBlocks.push(SCENE_LABELS[i].toUpperCase() + "\n" + lines.join("\n"));
+    });
 
-  // Szene 2: Aufbau
-  const buildupText = fillSubject(theme.buildup, figure);
-  parts.push(capFirst(`Scene 2 (build-up): ${buildupText} Camera: ${cam2.phrase}.`));
+    if (activeBlocks.length) {
+      const transition = state.transition ? TRANSITIONS.find(x => x.id === state.transition) : null;
+      activeBlocks.forEach((block, i) => {
+        parts.push(block);
+        if (i < activeBlocks.length - 1 && transition) {
+          parts.push("SZENENÜBERGANG\n" + `Übergang zur nächsten Szene mit ${transition.phrase}.`);
+        }
+      });
+      if (state.sceneErg) {
+        parts.push("HINWEIS ZU DEN SZENEN\n" + state.sceneErg);
+      }
+    }
+  }
 
-  parts.push(capFirst(`The scene transitions to the next moment with ${transition.phrase}.`));
+  // Musik & Atmosphäre
+  if (state.audio || state.audioErg) {
+    const lines = [];
+    if (state.audio) {
+      const a = AUDIO.find(x => x.id === state.audio);
+      lines.push(`${a.label} – ${a.hint}`);
+    }
+    if (state.audioErg) lines.push(state.audioErg);
+    parts.push("MUSIK & ATMOSPHÄRE\n" + lines.join("\n"));
+  }
 
-  // Szene 3: Höhepunkt
-  const climaxText = fillSubject(theme.climax, figure);
-  parts.push(capFirst(`Scene 3 (emotional climax): ${climaxText} Camera: ${cam3.phrase}.${state.themeErg ? " " + state.themeErg : ""}${state.sceneErg ? " " + state.sceneErg : ""}`));
-
-  parts.push(capFirst(`The audio atmosphere builds with ${audio.phrase}.${state.audioErg ? " " + state.audioErg : ""}`));
-
+  // Schlussteil: Studio-Enthüllung
   if (state.revealOn) {
-    const reveal = currentReveal();
-    parts.push(capFirst(`At the exact moment the emotional climax is reached, the camera begins a smooth, continuous pull-back while craning upward. As the camera retreats, the illusion is revealed: the entire scene has actually been filmed inside ${reveal.phrase}. It should feel like a genuine, high-end behind-the-scenes glimpse of a professional production — the audience only realizes it is a film set once the camera fully reveals it.${state.revealErg ? " " + state.revealErg : ""}`));
+    const reveal = state.revealType ? REVEAL_TYPES.find(x => x.id === state.revealType) : null;
+    const revealPhrase = reveal ? reveal.phrase : "einem professionellen Filmstudio";
+    let line = `Im Moment des emotionalen Höhepunkts beginnt die Kamera eine sanfte, durchgehende Rückwärtsfahrt und hebt sich gleichzeitig nach oben. Während die Kamera zurückweicht, wird die Illusion aufgelöst: Die gesamte Szene wurde in Wirklichkeit in ${revealPhrase} gefilmt. Es soll wie ein echter, hochwertiger Blick hinter die Kulissen einer professionellen Produktion wirken — erst wenn die Kamera vollständig zurückfährt, wird klar, dass es sich um ein Filmset handelt.`;
+    if (state.revealErg) line += " " + state.revealErg;
+    parts.push("SCHLUSSTEIL: STUDIO-ENTHÜLLUNG\n" + line);
   }
 
+  // Titel-Einblendung
   if (state.titleOn && (state.title1 || state.title2)) {
-    let titleBlock = state.revealOn
-      ? "As the camera reaches its widest view, elegant cinematic typography slowly fades in."
-      : "As the scene settles, elegant cinematic typography slowly fades in.";
-    if (state.title1) titleBlock += `\nFirst line:\n${state.title1}`;
-    if (state.title2) titleBlock += `\nOne second later:\n${state.title2}`;
-    parts.push(titleBlock);
+    const lines = [state.revealOn
+      ? "Sobald die Kamera ihre weiteste Einstellung erreicht, blendet elegante, filmische Typografie langsam ein."
+      : "Sobald sich die Szene beruhigt, blendet elegante, filmische Typografie langsam ein."];
+    if (state.title1) lines.push(`Erste Zeile:\n${state.title1}`);
+    if (state.title2) lines.push(`Eine Sekunde später:\n${state.title2}`);
+    parts.push("TITEL-EINBLENDUNG\n" + lines.join("\n"));
   }
 
+  // Stil-Tags
   if (state.styleTags.length || state.styleErg) {
-    let tags = state.styleTags.slice();
+    const tags = state.styleTags.slice();
     if (state.styleErg) {
       state.styleErg.split(",").map(s => s.trim()).filter(Boolean).forEach(t => tags.push(t));
     }
-    parts.push(tags.join(".\n") + ".");
+    parts.push("STIL\n" + tags.map(t => t + ".").join("\n"));
   }
 
-  parts.push(capFirst(`Duration: ${state.dauer} seconds.\nAspect Ratio: ${state.aspect}.${state.durationErg ? " " + state.durationErg : ""}`));
+  // Format
+  {
+    const lines = [`Gesamtlänge: ${state.dauerGesamt} Sekunden.`];
+    if (state.aspect) lines.push(`Seitenverhältnis: ${state.aspect}.`);
+    if (state.durationErg) lines.push(state.durationErg);
+    parts.push("FORMAT\n" + lines.join("\n"));
+  }
 
-  document.getElementById("promptText").textContent = parts.join("\n\n");
+  document.getElementById("promptText").textContent = parts.length
+    ? parts.join("\n\n")
+    : "Wähle mindestens einen Punkt aus, um einen Prompt zu erzeugen...";
 }
 
 // Fallback via ein unsichtbares Textarea + execCommand — nötig weil
